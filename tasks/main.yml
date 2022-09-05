@@ -1,27 +1,70 @@
 # SPDX-License-Identifier: MIT
 ---
-# Put the tasks for your role here.
-
 - name: Set platform/version specific variables
   include_tasks: tasks/set_vars.yml
 
-# Examples of some tasks:
 - name: Ensure required packages are installed
+  become: true
   package:
-    name: "{{ __template_packages }}"
+    name: "{{ __dnf_automatic_packages }}"
     state: present
 
 - name: Ensure required services are enabled and started
+  become: true
   service:
     name: "{{ item }}"
-    state: started
     enabled: yes
-  loop: "{{ __template_services }}"
+    state: started
+  loop: "{{ __dnf_automatic_services }}"
 
-- name: Generate /etc/{{ __template_foo_config }}
+- name: Generate /etc/dnf/{{ __dnf_automatic_config }}
+  become: true
   template:
-    src: "{{ __template_foo_config }}.j2"
-    dest: /etc/{{ __template_foo_config }}
+    src: "{{ __dnf_automatic_config }}.j2"
+    dest: /etc/dnf/{{ __dnf_automatic_config }}
     backup: yes
-    mode: 0400
-  notify: template handler to restart services
+    mode: 0644
+    owner: root
+    group: root
+
+#/etc/systemd/system/dnf-automatic-install.timer.d/time.conf
+- name: create /etc/systemd/system/dnf-automatic-install.timer.d
+  become: true
+  file:
+    path: /etc/systemd/system/dnf-automatic-install.timer.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Generate /etc/systemd/system/dnf-automatic-install.timer.d/time.conf
+  become: true
+  template:
+    src: time.conf.j2
+    dest: /etc/systemd/system/dnf-automatic-install.timer.d/time.conf
+    backup: yes
+    mode: 0644
+    owner: root
+    group: root
+  notify: dnf_automatic handler to reload services
+
+# /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
+- name: create /etc/systemd/system/dnf-automatic-install.service.d
+  become: true
+  file:
+    path: /etc/systemd/system/dnf-automatic-install.service.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Generate /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
+  become: true
+  template:
+    src: autoreboot.conf.j2
+    dest: /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
+    backup: yes
+    mode: 0644
+    owner: root
+    group: root
+  notify: dnf_automatic handler to reload services

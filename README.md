@@ -1,14 +1,11 @@
 # Role Name
-![template](https://github.com/linux-system-roles/template/workflows/tox/badge.svg)
+![dnf_automatic](https://github.com/linux-system-roles/template/workflows/tox/badge.svg)
 
-A template for an ansible role which configures some GNU/Linux subsystem or
-service. A brief description of the role goes here.
+This role installs and configures dnf-automatic on EL8 or newer hosts.
 
 ## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should
-be mentioned here. For instance, if the role uses the EC2 module, it may be a
-good idea to mention in this section that the `boto` package is required.
+dnf should work (repositories properly configured, subscription-manager registered on RHEL, etc).
 
 ## Role Variables
 
@@ -69,9 +66,8 @@ can be useful especially for documentation.
 
 ## License
 
-Whenever possible, please prefer MIT.
+MIT
 
 ## Author Information
 
-An optional section for the role authors to include contact information, or a
-website (HTML is not allowed).
+Klaas Demter

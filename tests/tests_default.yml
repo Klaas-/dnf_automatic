@@ -4,4 +4,4 @@
   hosts: all
   gather_facts: false  # test that role works in this case
   roles:
-    - linux-system-roles.template
+    - linux-system-roles.dnf_automatic

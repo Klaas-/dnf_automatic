@@ -1,15 +1,12 @@
 # SPDX-License-Identifier: MIT
 ---
-# Put the role's internal variables here that are not distribution specific.
-# You can override these by defining the same variable with a different
-# value in a platform/version specific file in vars/
+__dnf_automatic_config: automatic.conf
+# /etc/dnf/automatic.conf
 
-# Examples of non-distribution specific (generic) internal variables:
-__template_foo_config: foo.conf
-__template_packages: []
-__template_services: []
+__dnf_automatic_packages: [ dnf-automatic ]
+__dnf_automatic_services: [ dnf-automatic-install.timer ]
 # ansible_facts required by the role
-__template_required_facts:
+__dnf_automatic_required_facts:
   - distribution
   - distribution_major_version
   - distribution_version

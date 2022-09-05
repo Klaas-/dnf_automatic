@@ -1,0 +1,62 @@
+{{ ansible_managed | comment }}
+[commands]
+upgrade_type = {{ dnf_automatic_commands_upgrade_type }}
+random_sleep = {{ dnf_automatic_commands_random_sleep }}
+network_online_timeout = {{ dnf_automatic_commands_network_online_timeout }}
+download_updates = {{ dnf_automatic_commands_download_updates }}
+apply_updates = {{ dnf_automatic_commands_apply_updates }}
+
+
+[emitters]
+system_name = {{ dnf_automatic_commands_system_name }}
+emit_via = {{ dnf_automatic_emitters_emit_via }}
+
+
+[email]
+{% if dnf_automatic_email_email_from is defined %}
+email_from = {{ dnf_automatic_email_email_from }}
+{% endif %}
+
+{% if dnf_automatic_email_email_to is defined %}
+email_to = {{ dnf_automatic_email_email_to }}
+{% endif %}
+
+{% if dnf_automatic_email_email_host is defined %}
+email_host = {{ dnf_automatic_email_email_host }}
+{% endif %}
+
+
+[command]
+{% if dnf_automatic_command_command_format is defined %}
+command_format = {{ dnf_automatic_command_command_format }}
+{% endif %}
+
+{% if dnf_automatic_command_stdin_format is defined %}
+stdin_format = {{ dnf_automatic_command_stdin_format }}
+{% endif %}
+
+
+[command_email]
+{% if dnf_automatic_command_email_command_format is defined %}
+command_format = {{ dnf_automatic_command_email_command_format }}
+{% endif %}
+
+{% if dnf_automatic_command_email_stdin_format is defined %}
+stdin_format = {{ dnf_automatic_command_email_stdin_format }}
+{% endif %}
+
+{% if dnf_automatic_command_email_email_from is defined %}
+email_from = {{ dnf_automatic_command_email_email_from }}
+{% endif %}
+
+{% if dnf_automatic_command_email_email_to is defined %}
+email_to = {{ dnf_automatic_command_email_email_to }}
+{% endif %}
+
+
+[base]
+{% if dnf_automatic_base_options is defined %}
+{% for k, v in dnf_automatic_base_options.items() %}
+{{ k }} = {{ v }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,6 @@
+[Timer]
+OnBootSec=
+OnCalendar={{ dnf_automatic_systemd_timer_time }}
+{% if dnf_automatic_systemd_timer_random_delay is defined %}
+RandomizedDelaySec={{ dnf_automatic_systemd_timer_random_delay }}
+{% endif %}

@@ -1,8 +1,30 @@
 # SPDX-License-Identifier: MIT
 ---
-# Here is the right place to put the role's input variables.
-# This file also serves as a documentation for such a variables.
 
-# Examples of role input variables:
-template_foo: foo
-template_bar: bar
+
+dnf_automatic_systemd_timer_time: '23:45'
+# by default the systemd timer has a random delay of up to 60m
+#dnf_automatic_systemd_timer_random_delay: 60m
+dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
+
+
+# /etc/dnf/automatic.conf options
+# Docs: https://dnf.readthedocs.io/en/latest/automatic.html
+dnf_automatic_commands_upgrade_type: default
+dnf_automatic_commands_random_sleep: 0
+dnf_automatic_commands_network_online_timeout: 60
+dnf_automatic_commands_download_updates: yes
+dnf_automatic_commands_apply_updates: no
+dnf_automatic_commands_system_name: "{{ ansible_fqdn }}"
+dnf_automatic_emitters_emit_via: stdio
+#dnf_automatic_email_email_from: root@example.com
+#dnf_automatic_email_email_to: root
+#dnf_automatic_email_email_host: localhost
+#dnf_automatic_command_command_format: cat
+#dnf_automatic_command_stdin_format: '{body}'
+#dnf_automatic_command_email_command_format: 'mail -Ssendwait -s {subject} -r {email_from} {email_to}'
+#dnf_automatic_command_email_stdin_format: '{body}'
+#dnf_automatic_command_email_email_from: root@example.com
+#dnf_automatic_command_email_email_to: root
+#dnf_automatic_base_options: 
+#  debuglevel: 1
