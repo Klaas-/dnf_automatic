@@ -2,11 +2,9 @@
 ---
 galaxy_info:
   # Replace with role's author name:
-  author: John Doe <jdoe@corp.com>
+  author: Klaas Demter
   # Replace with the real description of what is role's purpose:
   description: Basic dnf_automatic for Linux system roles
-  # Replace with the company the role's author is member of:
-  company: John Doe, Inc.
 
   # If the issue tracker for your role is not on github, uncomment the next
   # line and provide a value
@@ -53,7 +51,8 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - all
+        - 8
+        - 9
 
   galaxy_tags: []
   # List tags for your role here, one per line. A tag is a keyword that

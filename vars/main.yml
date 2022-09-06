@@ -4,7 +4,7 @@ __dnf_automatic_config: automatic.conf
 # /etc/dnf/automatic.conf
 
 __dnf_automatic_packages: [ dnf-automatic ]
-__dnf_automatic_services: [ dnf-automatic-install.timer ]
+__dnf_automatic_services: [ dnf-automatic.timer ]
 # ansible_facts required by the role
 __dnf_automatic_required_facts:
   - distribution

@@ -7,4 +7,3 @@
   become: true
   systemd:
     daemon_reload: true
-  loop: "{{ __dnf_automatic_services }}"

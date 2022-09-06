@@ -9,14 +9,6 @@
     name: "{{ __dnf_automatic_packages }}"
     state: present
 
-- name: Ensure required services are enabled and started
-  become: true
-  service:
-    name: "{{ item }}"
-    enabled: yes
-    state: started
-  loop: "{{ __dnf_automatic_services }}"
-
 - name: Generate /etc/dnf/{{ __dnf_automatic_config }}
   become: true
   template:
@@ -27,44 +19,57 @@
     owner: root
     group: root
 
-#/etc/systemd/system/dnf-automatic-install.timer.d/time.conf
-- name: create /etc/systemd/system/dnf-automatic-install.timer.d
+#/etc/systemd/system/dnf-automatic.timer.d/time.conf
+- name: create /etc/systemd/system/dnf-automatic.timer.d
   become: true
   file:
-    path: /etc/systemd/system/dnf-automatic-install.timer.d
+    path: /etc/systemd/system/dnf-automatic.timer.d
     state: directory
     mode: '0755'
     owner: root
     group: root
 
-- name: Generate /etc/systemd/system/dnf-automatic-install.timer.d/time.conf
+- name: Generate /etc/systemd/system/dnf-automatic.timer.d/time.conf
   become: true
   template:
     src: time.conf.j2
-    dest: /etc/systemd/system/dnf-automatic-install.timer.d/time.conf
+    dest: /etc/systemd/system/dnf-automatic.timer.d/time.conf
     backup: yes
     mode: 0644
     owner: root
     group: root
   notify: dnf_automatic handler to reload services
 
-# /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
-- name: create /etc/systemd/system/dnf-automatic-install.service.d
+# /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
+- name: create /etc/systemd/system/dnf-automatic.service.d
   become: true
   file:
-    path: /etc/systemd/system/dnf-automatic-install.service.d
+    path: /etc/systemd/system/dnf-automatic.service.d
     state: directory
     mode: '0755'
     owner: root
     group: root
+  when: dnf_automatic_systemd_post_update_action is defined
 
-- name: Generate /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
+- name: Generate /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
   become: true
   template:
     src: autoreboot.conf.j2
-    dest: /etc/systemd/system/dnf-automatic-install.service.d/autoreboot.conf
+    dest: /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
     backup: yes
     mode: 0644
     owner: root
     group: root
   notify: dnf_automatic handler to reload services
+  when: dnf_automatic_systemd_post_update_action is defined
+
+- name: Flush handlers (daemon-reload may be needed)
+  meta: flush_handlers
+
+- name: Ensure required services are enabled and started
+  become: true
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop: "{{ __dnf_automatic_services }}"

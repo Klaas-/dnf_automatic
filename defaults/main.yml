@@ -1,12 +1,23 @@
 # SPDX-License-Identifier: MIT
 ---
 
-
+# default for role, daily updates at 23:45 (11:45pm)
 dnf_automatic_systemd_timer_time: '23:45'
+# other examples of times you can use here:
+# 'Tue *-*-* 22:00:00 UTC' weekly, tuesday 22:00 UTC
+# 'Tue *-*-01..07 22:00:00 UTC' First  tuesday of the month, 22:00 UTC
+# 'Tue *-*-08..14 22:00:00 UTC' Second tuesday of the month, 22:00 UTC
+# 'Tue *-*-15..21 22:00:00 UTC' Third  tuesday of the month, 22:00 UTC
+# 'Tue *-*-22..28 22:00:00 UTC' Fourth tuesday of the month, 22:00 UTC
+# 'Tue *-*~01..07 22:00:00 UTC' Last tuesday of the month, 22:00 UTC
 # by default the systemd timer has a random delay of up to 60m
 #dnf_automatic_systemd_timer_random_delay: 60m
-dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
 
+# if you want to run post update action define the following variable
+# example1: unconditional reboot on any package changes (cockpit uses this)
+#dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
+# example2: use needs-restarting to determine if a reboot is needed:
+#dnf_automatic_systemd_post_update_action: 'if ! /usr/bin/dnf needs-restarting -r ; then shutdown -r +5 rebooting after applying package updates; fi'
 
 # /etc/dnf/automatic.conf options
 # Docs: https://dnf.readthedocs.io/en/latest/automatic.html
@@ -14,8 +25,8 @@ dnf_automatic_commands_upgrade_type: default
 dnf_automatic_commands_random_sleep: 0
 dnf_automatic_commands_network_online_timeout: 60
 dnf_automatic_commands_download_updates: yes
-dnf_automatic_commands_apply_updates: no
-dnf_automatic_commands_system_name: "{{ ansible_fqdn }}"
+dnf_automatic_commands_apply_updates: yes
+dnf_automatic_emitters_system_name: "{{ ansible_fqdn }}"
 dnf_automatic_emitters_emit_via: stdio
 #dnf_automatic_email_email_from: root@example.com
 #dnf_automatic_email_email_to: root

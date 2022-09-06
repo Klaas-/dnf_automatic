@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example dnf_automatic role invocation
+  hosts: all
+  vars:
+    # Update Weekly on Tuesday
+    dnf_automatic_systemd_timer_time: 'Tue *-*-* 21:00:00 UTC'
+    # No random delay
+    dnf_automatic_systemd_timer_random_delay: 0
+    # reboot if any packages were updated
+    dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
+
+  roles:
+    - linux-system-roles.dnf_automatic
