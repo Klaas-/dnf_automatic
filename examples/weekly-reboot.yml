@@ -7,8 +7,13 @@
     dnf_automatic_systemd_timer_time: 'Tue *-*-* 21:00:00 UTC'
     # No random delay
     dnf_automatic_systemd_timer_random_delay: 0
-    # reboot if any packages were updated
-    dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
+    # reboot only when a reboot is required; on older EL releases the role
+    # falls back to the legacy systemd post-update action automatically
+    dnf_automatic_commands_reboot: when-needed
+
+    # optional: override the fallback command used on systems without native
+    # reboot support in dnf-automatic
+    #dnf_automatic_systemd_post_update_action: 'if ! /usr/bin/dnf needs-restarting -r ; then shutdown -r +5 rebooting after applying package updates; fi'
 
   roles:
     - linux-system-roles.dnf_automatic

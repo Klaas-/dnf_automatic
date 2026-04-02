@@ -9,6 +9,39 @@
     name: "{{ __dnf_automatic_packages }}"
     state: present
 
+- name: Gather package facts
+  become: true
+  package_facts:
+    manager: auto
+
+- name: Set reboot support variables
+  set_fact:
+    __dnf_automatic_native_reboot_supported: >-
+      {{ (__dnf_automatic_dnf_package.version + '-' + __dnf_automatic_dnf_package.release) is version(__dnf_automatic_min_native_reboot_version, '>=') }}
+    dnf_automatic_dnf_package: "{{ __dnf_automatic_dnf_package }}"
+  vars:
+    __dnf_automatic_dnf_package: >-
+      {{ (ansible_facts.packages[__dnf_automatic_packages | first] | default([])) | first | default({}) }}
+
+- name: Verify dnf_automatic_commands_reboot value
+  assert:
+    that:
+      - dnf_automatic_commands_reboot in __dnf_automatic_valid_reboot_values
+    fail_msg: >-
+      dnf_automatic_commands_reboot must be one of:
+      {{ __dnf_automatic_valid_reboot_values | join(', ') }}.
+  when: dnf_automatic_commands_reboot is defined
+
+- name: Fail when legacy reboot action is defined on systems with native reboot support
+  fail:
+    msg: >-
+      dnf_automatic_systemd_post_update_action is only supported on systems
+      without native dnf-automatic reboot support. Use
+      dnf_automatic_commands_reboot instead.
+  when:
+    - __dnf_automatic_native_reboot_supported
+    - dnf_automatic_systemd_post_update_action is defined
+
 - name: Generate /etc/dnf/{{ __dnf_automatic_config }}
   become: true
   template:
@@ -41,30 +74,68 @@
   notify: dnf_automatic handler to reload services
 
 # /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
-- name: create /etc/systemd/system/dnf-automatic.service.d
+- name: Manage reboot actions
+  vars:
+    __dnf_automatic_systemd_post_update_action: >-
+      {{
+        dnf_automatic_systemd_post_update_action |
+        default(
+          __dnf_automatic_reboot_post_update_action_map[
+            dnf_automatic_commands_reboot | default('never')
+          ]
+        )
+      }}
+  block:
+    - name: create /etc/systemd/system/dnf-automatic.service.d
+      become: true
+      file:
+        path: /etc/systemd/system/dnf-automatic.service.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Generate /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
+      become: true
+      template:
+        src: autoreboot.conf.j2
+        dest: /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
+        backup: yes
+        mode: 0644
+        owner: root
+        group: root
+      notify: dnf_automatic handler to reload services
+  when:
+    - not __dnf_automatic_native_reboot_supported
+    - __dnf_automatic_systemd_post_update_action | length > 0
+
+- name: Remove /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf when not needed
   become: true
   file:
-    path: /etc/systemd/system/dnf-automatic.service.d
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
-  when: dnf_automatic_systemd_post_update_action is defined
-
-- name: Generate /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
-  become: true
-  template:
-    src: autoreboot.conf.j2
-    dest: /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
-    backup: yes
-    mode: 0644
-    owner: root
-    group: root
+    path: /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
+    state: absent
   notify: dnf_automatic handler to reload services
-  when: dnf_automatic_systemd_post_update_action is defined
+  vars:
+    __dnf_automatic_systemd_post_update_action: >-
+      {{
+        dnf_automatic_systemd_post_update_action |
+        default(
+          __dnf_automatic_reboot_post_update_action_map[
+            dnf_automatic_commands_reboot | default('never')
+          ]
+        )
+      }}
+  when:
+    - __dnf_automatic_native_reboot_supported or
+      __dnf_automatic_systemd_post_update_action | length == 0
 
 - name: Flush handlers (daemon-reload may be needed)
   meta: flush_handlers
+
+- name: Gather service facts in check mode
+  become: true
+  service_facts:
+  when: ansible_check_mode
 
 - name: Ensure required services are enabled and started
   become: true
@@ -72,4 +143,10 @@
     name: "{{ item }}"
     enabled: yes
     state: started
-  loop: "{{ __dnf_automatic_services }}"
+  loop: >-
+    {{
+      __dnf_automatic_services if not ansible_check_mode else
+      __dnf_automatic_services |
+      select('in', ansible_facts.services.keys() | list) |
+      list
+    }}

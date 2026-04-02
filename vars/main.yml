@@ -11,3 +11,13 @@ __dnf_automatic_required_facts:
   - distribution_major_version
   - distribution_version
   - os_family
+
+__dnf_automatic_min_native_reboot_version: 4.14.0-6
+__dnf_automatic_valid_reboot_values:
+  - never
+  - when-changed
+  - when-needed
+__dnf_automatic_reboot_post_update_action_map:
+  never: ''
+  when-changed: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
+  when-needed: 'if ! /usr/bin/dnf needs-restarting -r ; then shutdown -r +5 rebooting after applying package updates; fi'

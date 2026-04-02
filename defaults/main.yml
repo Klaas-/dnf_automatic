@@ -13,7 +13,18 @@ dnf_automatic_systemd_timer_time: '23:45'
 # by default the systemd timer has a random delay of up to 60m
 #dnf_automatic_systemd_timer_random_delay: 60m
 
+# native dnf automatic reboot policy
+# supported on EL10 and on EL9 with dnf >= 4.14.0-6.el9
+# valid values are: never, when-changed, when-needed
+# on older systems, the role falls back to a systemd ExecStartPost action
+# that matches the selected reboot policy
+#dnf_automatic_commands_reboot: when-needed
+
 # if you want to run post update action define the following variable
+# this remains available for custom fallback behavior on systems that do not
+# support the native dnf automatic reboot option
+# if native reboot support is available, the role fails and requires
+# dnf_automatic_commands_reboot instead
 # example1: unconditional reboot on any package changes (cockpit uses this)
 #dnf_automatic_systemd_post_update_action: 'if systemctl status --no-pager --lines=100 dnf-automatic-install.service| grep -q ===========$$; then shutdown -r +5 rebooting after applying package updates; fi'
 # example2: use needs-restarting to determine if a reboot is needed:

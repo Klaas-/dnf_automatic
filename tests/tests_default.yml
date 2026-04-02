@@ -3,5 +3,28 @@
 - name: Ensure that the role runs with default parameters
   hosts: all
   gather_facts: false  # test that role works in this case
+  vars:
+    dnf_automatic_commands_reboot: when-needed
   roles:
     - linux-system-roles.dnf_automatic
+
+  tasks:
+    - name: Read generated automatic.conf
+      become: true
+      slurp:
+        src: /etc/dnf/automatic.conf
+      register: __dnf_automatic_config
+
+    - name: Check fallback drop-in
+      become: true
+      stat:
+        path: /etc/systemd/system/dnf-automatic.service.d/autoreboot.conf
+      register: __dnf_automatic_autoreboot_conf
+
+    - name: Assert EL8 fallback behavior
+      assert:
+        that:
+          - __dnf_automatic_autoreboot_conf.stat.exists
+          - >-
+            'reboot = when-needed' not in
+            (__dnf_automatic_config.content | b64decode)

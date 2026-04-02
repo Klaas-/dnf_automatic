@@ -5,6 +5,9 @@ random_sleep = {{ dnf_automatic_commands_random_sleep }}
 network_online_timeout = {{ dnf_automatic_commands_network_online_timeout }}
 download_updates = {{ dnf_automatic_commands_download_updates }}
 apply_updates = {{ dnf_automatic_commands_apply_updates }}
+{% if __dnf_automatic_native_reboot_supported and dnf_automatic_commands_reboot is defined %}
+reboot = {{ dnf_automatic_commands_reboot }}
+{% endif %}
 
 
 [emitters]
